@@ -1,9 +1,25 @@
-FROM ubuntu
+FROM node:20.9-alpine
 
-RUN apt update && apt install nodejs npm -y
+WORKDIR /usr/src/app
 
-COPY . .
+ENV NODE_ENV=production
 
-RUN npm install
+COPY package*.json ./
 
-CMD ["npm", "run", "dev"]
+#RUN npm install
+
+#RUN npm ci --only=production
+
+RUN --mount=type=cache,target=/usr/src/app/.npm \
+    npm set cache /usr/src/app/.npm && \
+    npm ci --only=production
+
+USER node
+
+COPY --chown=node:node . .
+
+#CMD ["npm", "run", "dev"]
+
+EXPOSE 3000
+
+CMD ["node", ".output/server/index.mjs"]
